@@ -449,6 +449,17 @@ function renderCharts() {
       plugins:[{
         id:'whiteBg',
         beforeDraw:(c)=>{ c.ctx.save(); c.ctx.fillStyle='#fff'; c.ctx.fillRect(0,0,c.width,c.height); c.ctx.restore(); }
+      },{
+        id:'hoursLabel',
+        afterDraw:(c)=>{
+          const ctx2=c.ctx, area=c.chartArea;
+          ctx2.save();
+          ctx2.fillStyle='#94a3b8';
+          ctx2.font='10px sans-serif';
+          ctx2.textAlign='center';
+          ctx2.fillText('hours', area.left + (area.right-area.left)/2, c.height - 4);
+          ctx2.restore();
+        }
       }],
       data:{
         labels: displayLabels,
@@ -483,11 +494,10 @@ function renderCharts() {
             ticks:{
               color:'#64748b', font:{size:10}, maxRotation:0,
               callback:(val,i)=>{
-                const lbl = displayLabels[i];
-                if (!lbl) return '';
-                return [lbl, 'hours'];
+                return displayLabels[i] || '';
               }
-            }
+            },
+            afterFit:(axis)=>{ axis.paddingBottom = 18; }
           },
           y:{
             min:minV-pad, max:maxV+pad,
@@ -735,7 +745,12 @@ async function doDownloadDirect(eq, selectedCIs) {
 
       const tChart=new Chart(tc,{
         type:'line',
-        plugins:[{id:'wb',beforeDraw:(c)=>{c.ctx.save();c.ctx.fillStyle='#fff';c.ctx.fillRect(0,0,c.width,c.height);c.ctx.restore();}}],
+        plugins:[{id:'wb',beforeDraw:(c)=>{c.ctx.save();c.ctx.fillStyle='#fff';c.ctx.fillRect(0,0,c.width,c.height);c.ctx.restore();}},
+          {id:'hoursLbl',afterDraw:(c)=>{
+            const cx=c.ctx,a=c.chartArea;
+            cx.save();cx.fillStyle='#94a3b8';cx.font='11px sans-serif';cx.textAlign='center';
+            cx.fillText('hours',a.left+(a.right-a.left)/2,c.height-4);cx.restore();
+          }}],
         data:{
           labels:allLabels,
           datasets:[{data:vals,borderColor:metric.color,borderWidth:2.5,pointRadius:0,tension:0.3,fill:false}]
@@ -747,7 +762,7 @@ async function doDownloadDirect(eq, selectedCIs) {
             x:{
               grid:{color:'#e2e8f0'},border:{display:false},
               ticks:{color:'#334155',font:{size:10},maxRotation:0,maxTicksLimit:20,
-                callback:(val,i)=>{const l=allLabels[i]; return l?[l,'hours']:'';}}
+                callback:(val,i)=>{return allLabels[i]||'';}}
             },
             y:{
               min:minV-pad2,max:maxV+pad2,
