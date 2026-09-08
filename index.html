@@ -384,13 +384,14 @@ function renderCharts() {
   const mainEl = document.getElementById('main');
   const chartW = Math.round((mainEl.clientWidth - 40) * 3);
 
-  // Display labels: extract HH:MM:SS
-  const labelStep = Math.max(1, Math.floor(rawLabels.length / 8));
+  // Display labels: extract HH:MM, show per-hour ticks, add "hours" label
   const displayLabels = rawLabels.map((l, i) => {
-    if (i % labelStep !== 0) return '';
     const s = String(l);
-    const tp = s.includes(' ') ? s.split(' ')[1] : s;
-    return tp || s;
+    const tp = s.includes(' ') ? s.split(' ')[1] : s; // HH:MM:SS
+    // Only keep HH:MM
+    const hm = tp ? tp.slice(0,5) : '';
+    // Show label only when minute == '00' (top of hour)
+    return (hm.slice(3,5) === '00' || i === 0 || i === rawLabels.length-1) ? hm : '';
   });
 
   container.innerHTML = '';
@@ -485,9 +486,7 @@ function renderCharts() {
               callback:(val,i)=>{
                 const lbl = displayLabels[i];
                 if (!lbl) return '';
-                // Prefix with date if set
-                const date = eq.userDate ? eq.userDate.slice(5) : ''; // MM-DD
-                return date ? `${date}\n${lbl}` : lbl;
+                return [lbl, 'hours'];
               }
             }
           },
@@ -579,17 +578,40 @@ async function loadCSV(file) {
 
 // ─── DOWNLOAD MODAL ───────────────────────────────────────────────
 function showDownloadModal() {
-  if (!chartInstances.length) { alert('No charts to download.'); return; }
-  const eq = equipments[selectedIndex];
+  if (!equipments.length) { alert('No data to download.'); return; }
   const checklist = document.getElementById('dl-checklist');
-  checklist.innerHTML = chartInstances.map((ci, i) => `
-    <div class="dl-item">
-      <input type="checkbox" id="dl-chk-${i}" checked>
-      <div class="dl-dot" style="background:${ci.metric.color}"></div>
-      <label for="dl-chk-${i}">${ci.metric.label} [${ci.metric.unit}]</label>
-    </div>
-  `).join('');
+
+  // Build checklist grouped by equipment
+  let html = '';
+  equipments.forEach((eq, ei) => {
+    html += `
+      <div style="padding:8px 0 4px;font-size:11px;font-weight:700;color:#1e293b;font-family:monospace;
+        border-top:${ei>0?'1px solid #e2e8f0':'none'};margin-top:${ei>0?'8px':'0'}">
+        <input type="checkbox" id="dl-eq-${ei}" onchange="toggleEqChk(${ei})" checked style="margin-right:6px;accent-color:#2563eb;">
+        <span style="color:${COLORS[ei%COLORS.length]}">●</span> ${eq.name}
+        ${eq.userDate ? `<span style="color:#94a3b8;font-weight:400"> · ${eq.userDate}</span>` : ''}
+      </div>
+    `;
+    SHOW_METRICS.forEach((metric, mi) => {
+      html += `
+        <div class="dl-item" style="padding-left:16px;">
+          <input type="checkbox" id="dl-chk-${ei}-${mi}" data-eq="${ei}" checked>
+          <div class="dl-dot" style="background:${metric.color}"></div>
+          <label for="dl-chk-${ei}-${mi}">${metric.label} [${metric.unit}]</label>
+        </div>
+      `;
+    });
+  });
+  checklist.innerHTML = html;
   document.getElementById('dl-modal').style.display = 'flex';
+}
+
+function toggleEqChk(ei) {
+  const master = document.getElementById(`dl-eq-${ei}`);
+  SHOW_METRICS.forEach((_, mi) => {
+    const cb = document.getElementById(`dl-chk-${ei}-${mi}`);
+    if (cb) cb.checked = master.checked;
+  });
 }
 
 function closeDlModal() { document.getElementById('dl-modal').style.display='none'; }
@@ -597,30 +619,60 @@ function closeDlModal() { document.getElementById('dl-modal').style.display='non
 let dlAllSelected = true;
 function toggleAllDl() {
   dlAllSelected = !dlAllSelected;
-  document.querySelectorAll('[id^=dl-chk-]').forEach(cb => cb.checked = dlAllSelected);
+  document.querySelectorAll('[id^=dl-chk-],[id^=dl-eq-]').forEach(cb => cb.checked = dlAllSelected);
   document.getElementById('dl-toggle-btn').textContent = dlAllSelected ? 'Deselect All' : 'Select All';
 }
 
 async function executeDownload() {
-  const selected = chartInstances.filter((ci, i) => {
-    const cb = document.getElementById(`dl-chk-${i}`);
-    return cb && cb.checked;
+  // Collect selected: per equipment, per metric
+  const tasks = []; // { eq, metricIndex }
+  equipments.forEach((eq, ei) => {
+    SHOW_METRICS.forEach((metric, mi) => {
+      const cb = document.getElementById(`dl-chk-${ei}-${mi}`);
+      if (cb && cb.checked) tasks.push({ eq, ei, metric, mi });
+    });
   });
-  if (!selected.length) { alert('Select at least one chart.'); return; }
+
+  if (!tasks.length) { alert('Select at least one chart.'); return; }
   closeDlModal();
-  await doDownload(selected);
+
+  // Group tasks by equipment, download one PNG per equipment
+  const byEq = {};
+  tasks.forEach(t => {
+    if (!byEq[t.ei]) byEq[t.ei] = [];
+    byEq[t.ei].push(t);
+  });
+
+  for (const ei of Object.keys(byEq)) {
+    const eqTasks = byEq[ei];
+    const eq = eqTasks[0].eq;
+    // Build fake CIs for doDownloadDirect
+    const cis = eqTasks.map(t => {
+      // Sample data for this eq
+      const sampled = sampleData(eq.data, MAX_POINTS);
+      const timeKey = Object.keys(sampled[0]||{}).find(k=>k.trim().toLowerCase()==='time')||'Time';
+      const rawLabels = sampled.map(d=>(d[timeKey]||'').toString().trim());
+      const firstRow = sampled[0]||{};
+      const dataKey = findKey(firstRow, t.metric.prefix);
+      const vals = dataKey ? sampled.map(d=>typeof d[dataKey]==='number'?d[dataKey]:null) : [];
+      const numVals = vals.filter(v=>v!==null);
+      const minV = numVals.length ? Math.min(...numVals) : 0;
+      const maxV = numVals.length ? Math.max(...numVals) : 1;
+      return { metric:t.metric, vals, minV, maxV, rawLabels, eq };
+    });
+    await doDownloadDirect(eq, cis);
+  }
 }
 
 async function downloadSingleChart(mi) {
   const ci = chartInstances.find(c => c.metricIndex === mi);
   if (!ci) return;
-  await doDownload([ci]);
+  const eq = equipments[selectedIndex];
+  await doDownloadDirect(eq, [ci]);
 }
 
 // ─── DOWNLOAD ENGINE ─────────────────────────────────────────────
-async function doDownload(selectedCIs) {
-  const eq = equipments[selectedIndex];
-  if (!eq) return;
+async function doDownloadDirect(eq, selectedCIs) {
 
   const btn = document.getElementById('btn-download-hidden') || document.createElement('button');
 
@@ -671,12 +723,12 @@ async function doDownload(selectedCIs) {
       const pad2=(maxV-minV)*0.12||0.05;
       const dlStep=Math.max(1,Math.floor(rawLabels.length/10));
       const allLabels=rawLabels.map((l,i)=>{
-        if(i%dlStep!==0) return '';
         const s=String(l);
         const tp=s.includes(' ')?s.split(' ')[1]:s;
-        // Prefix with date
-        const date=eq.userDate?eq.userDate.slice(5):'';
-        return tp ? (date?`${date} ${tp}`:tp) : '';
+        const hm=tp?tp.slice(0,5):'';
+        // Show at top of hour or first/last
+        if(hm.slice(3,5)==='00'||i===0||i===rawLabels.length-1) return hm;
+        return '';
       });
 
       const tc=document.createElement('canvas');
@@ -697,8 +749,8 @@ async function doDownload(selectedCIs) {
           scales:{
             x:{
               grid:{color:'#e2e8f0'},border:{display:false},
-              ticks:{color:'#334155',font:{size:10},maxRotation:0,maxTicksLimit:10,
-                callback:(val,i)=>allLabels[i]||''}
+              ticks:{color:'#334155',font:{size:10},maxRotation:0,maxTicksLimit:20,
+                callback:(val,i)=>{const l=allLabels[i]; return l?[l,'hours']:'';}}
             },
             y:{
               min:minV-pad2,max:maxV+pad2,
