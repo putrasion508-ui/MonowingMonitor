@@ -384,14 +384,13 @@ function renderCharts() {
   const mainEl = document.getElementById('main');
   const chartW = Math.round((mainEl.clientWidth - 40) * 3);
 
-  // Display labels: extract HH:MM, show per-hour ticks, add "hours" label
+  // Display labels: extract HH:MM, show ~8 evenly spaced, add "hours" below
+  const labelStep = Math.max(1, Math.floor(rawLabels.length / 8));
   const displayLabels = rawLabels.map((l, i) => {
+    if (i % labelStep !== 0 && i !== rawLabels.length - 1) return '';
     const s = String(l);
-    const tp = s.includes(' ') ? s.split(' ')[1] : s; // HH:MM:SS
-    // Only keep HH:MM
-    const hm = tp ? tp.slice(0,5) : '';
-    // Show label only when minute == '00' (top of hour)
-    return (hm.slice(3,5) === '00' || i === 0 || i === rawLabels.length-1) ? hm : '';
+    const tp = s.includes(' ') ? s.split(' ')[1] : s;
+    return tp ? tp.slice(0, 5) : ''; // HH:MM only
   });
 
   container.innerHTML = '';
@@ -723,12 +722,10 @@ async function doDownloadDirect(eq, selectedCIs) {
       const pad2=(maxV-minV)*0.12||0.05;
       const dlStep=Math.max(1,Math.floor(rawLabels.length/10));
       const allLabels=rawLabels.map((l,i)=>{
+        if(i%dlStep!==0 && i!==rawLabels.length-1) return '';
         const s=String(l);
         const tp=s.includes(' ')?s.split(' ')[1]:s;
-        const hm=tp?tp.slice(0,5):'';
-        // Show at top of hour or first/last
-        if(hm.slice(3,5)==='00'||i===0||i===rawLabels.length-1) return hm;
-        return '';
+        return tp?tp.slice(0,5):''; // HH:MM only
       });
 
       const tc=document.createElement('canvas');
