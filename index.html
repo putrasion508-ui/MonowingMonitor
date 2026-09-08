@@ -446,10 +446,15 @@ function renderCharts() {
             <canvas id="chart-${mi}"></canvas>
           </div>
         </div>
-        <div class="chart-hours-label">— hours —</div>
       </div>
     `;
     container.appendChild(card);
+
+    // "hours" label outside the card, below it
+    const hoursDiv = document.createElement('div');
+    hoursDiv.style.cssText = 'text-align:center;font-size:10px;color:#94a3b8;font-family:monospace;letter-spacing:2px;margin:-6px 0 8px 150px;';
+    hoursDiv.textContent = '— hours —';
+    container.appendChild(hoursDiv);
 
     setTimeout(() => {
       const crEl = document.getElementById(`cr-${mi}`);
@@ -495,11 +500,8 @@ function renderCharts() {
             grid:{color:'#e2e8f0'}, border:{display:false},
             ticks:{
               color:'#64748b', font:{size:10}, maxRotation:0,
-              callback:(val,i)=>{
-                return displayLabels[i] || '';
-              }
-            },
-            afterFit:(axis)=>{ axis.paddingBottom = 18; }
+              callback:(val,i)=>{ return displayLabels[i] || ''; }
+            }
           },
           y:{
             min:minV-pad, max:maxV+pad,
