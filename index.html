@@ -6,129 +6,121 @@
 <title>Monowing Monitor — Data Dashboard</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <style>
-:root {
-  --bg:#f0f4f8; --surface:#ffffff; --surface2:#f8fafc;
-  --border:#dde3ea; --accent:#2563eb; --accent2:#06b6d4;
-  --text:#1e293b; --text-dim:#64748b; --text-muted:#94a3b8;
-  --danger:#ef4444; --success:#16a34a;
-}
+:root{--bg:#f0f4f8;--surface:#fff;--surface2:#f8fafc;--border:#dde3ea;--accent:#2563eb;--accent2:#06b6d4;--text:#1e293b;--dim:#64748b;--muted:#94a3b8;--danger:#ef4444;}
 *{box-sizing:border-box;margin:0;padding:0;}
 body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;min-height:100vh;display:flex;flex-direction:column;}
 
 /* HEADER */
 header{background:var(--surface);border-bottom:1px solid var(--border);padding:10px 20px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;gap:8px;flex-wrap:wrap;}
-.header-brand{display:flex;align-items:center;gap:10px;}
-.header-icon{width:32px;height:32px;background:linear-gradient(135deg,var(--accent),var(--accent2));border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;}
-.header-label{font-size:9px;color:var(--accent);letter-spacing:3px;font-family:monospace;}
-.header-title{font-size:15px;font-weight:700;color:#1e293b;}
-.header-actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
-.header-date{font-size:10px;color:var(--text-dim);font-family:monospace;}
-.btn{display:inline-flex;align-items:center;gap:5px;font-family:monospace;font-size:11px;padding:6px 12px;border-radius:6px;cursor:pointer;border:1px solid;transition:all 0.2s;white-space:nowrap;}
+.hbrand{display:flex;align-items:center;gap:10px;}
+.hicon{width:32px;height:32px;background:linear-gradient(135deg,var(--accent),var(--accent2));border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;}
+.hlabel{font-size:9px;color:var(--accent);letter-spacing:3px;font-family:monospace;}
+.htitle{font-size:15px;font-weight:700;}
+.hdate{font-size:10px;color:var(--dim);font-family:monospace;}
+.hactions{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+
+/* BUTTONS */
+.btn{display:inline-flex;align-items:center;gap:5px;font-family:monospace;font-size:11px;padding:6px 12px;border-radius:6px;cursor:pointer;border:1px solid;transition:all .2s;white-space:nowrap;background:none;}
 .btn-primary{background:var(--accent);color:#fff;border-color:var(--accent);}
 .btn-primary:hover{background:#1d4ed8;}
-.btn-outline{background:rgba(37,99,235,0.08);color:var(--accent);border-color:rgba(37,99,235,0.3);}
-.btn-outline:hover{background:rgba(37,99,235,0.18);}
-.btn-danger{background:rgba(239,68,68,0.08);color:var(--danger);border-color:rgba(239,68,68,0.3);}
-.btn-danger:hover{background:rgba(239,68,68,0.18);}
-.btn:disabled{opacity:0.4;cursor:not-allowed;}
+.btn-outline{background:rgba(37,99,235,.08);color:var(--accent);border-color:rgba(37,99,235,.3);}
+.btn-outline:hover{background:rgba(37,99,235,.18);}
+.btn-danger{background:rgba(239,68,68,.08);color:var(--danger);border-color:rgba(239,68,68,.3);}
+.btn-danger:hover{background:rgba(239,68,68,.18);}
 
 /* LAYOUT */
 .layout{display:flex;flex:1;height:calc(100vh - 57px);overflow:hidden;}
 
 /* SIDEBAR */
-aside{width:230px;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden;}
-.sidebar-label{font-size:9px;letter-spacing:3px;color:var(--text-muted);padding:12px 14px 6px;font-family:monospace;}
-#equipment-list{flex:1;overflow-y:auto;}
-.eq-item{padding:9px 12px;cursor:pointer;border-left:3px solid transparent;transition:all 0.15s;}
+aside{width:220px;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden;flex-shrink:0;}
+.slabel{font-size:9px;letter-spacing:3px;color:var(--muted);padding:12px 14px 6px;font-family:monospace;}
+#eq-list{flex:1;overflow-y:auto;}
+.eq-item{padding:9px 12px;cursor:pointer;border-left:3px solid transparent;transition:all .15s;}
 .eq-item:hover{background:var(--surface2);}
 .eq-item.active{background:var(--surface2);border-left-color:var(--accent);}
 .eq-top{display:flex;align-items:center;gap:7px;margin-bottom:3px;}
 .eq-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
 .eq-name{font-size:11px;font-weight:600;color:#5a7a94;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 .eq-item.active .eq-name{color:#1e293b;}
-.eq-date{font-size:9px;color:var(--text-muted);font-family:monospace;padding-left:15px;margin-top:1px;}
+.eq-date{font-size:9px;color:var(--muted);font-family:monospace;padding-left:15px;margin-top:2px;}
 .eq-tags{display:flex;flex-wrap:wrap;gap:3px;padding-left:15px;margin-top:3px;}
-.eq-tag{font-size:9px;font-family:monospace;background:rgba(37,99,235,0.08);border:1px solid rgba(37,99,235,0.15);color:#3b5268;padding:1px 5px;border-radius:3px;}
-.eq-item.active .eq-tag{color:#2563eb;border-color:rgba(37,99,235,0.3);}
-.eq-actions{display:flex;gap:3px;margin-left:auto;}
-.eq-btn{opacity:0;font-size:12px;background:none;border:none;cursor:pointer;padding:2px 4px;border-radius:3px;transition:opacity 0.15s;}
-.eq-item:hover .eq-btn{opacity:1;}
-.eq-btn-del{color:var(--danger);}
-.eq-btn-del:hover{background:rgba(239,68,68,0.1);}
-
-/* Upload area */
-.upload-area{position:relative;margin:8px;border:2px dashed var(--border);border-radius:8px;padding:12px 8px;text-align:center;cursor:pointer;color:var(--text-muted);font-size:11px;transition:all 0.2s;font-family:monospace;display:block;}
-.upload-area:hover{border-color:var(--accent);color:var(--accent);background:rgba(37,99,235,0.04);}
-.upload-icon{font-size:18px;margin-bottom:3px;}
-.upload-sub{font-size:9px;margin-top:2px;}
-.sidebar-bottom{padding:8px;}
+.eq-tag{font-size:9px;font-family:monospace;background:rgba(37,99,235,.08);border:1px solid rgba(37,99,235,.15);color:#3b5268;padding:1px 5px;border-radius:3px;}
+.eq-item.active .eq-tag{color:var(--accent);border-color:rgba(37,99,235,.3);}
+.eq-del{opacity:0;font-size:12px;background:none;border:none;cursor:pointer;padding:2px 4px;border-radius:3px;color:var(--danger);}
+.eq-item:hover .eq-del{opacity:1;}
+.upload-area{position:relative;margin:8px;border:2px dashed var(--border);border-radius:8px;padding:12px 8px;text-align:center;cursor:pointer;color:var(--muted);font-size:11px;transition:all .2s;font-family:monospace;display:block;}
+.upload-area:hover{border-color:var(--accent);color:var(--accent);background:rgba(37,99,235,.04);}
 
 /* MAIN */
-main{flex:1;overflow-y:auto;padding:14px 18px;min-width:0;}
+main{flex:1;overflow-y:auto;min-width:0;}
 
-/* Device card */
+/* EMPTY STATE - centered properly */
+.empty-state{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  height:100%;min-height:calc(100vh - 100px);
+  text-align:center;padding:40px;
+}
+.empty-icon{font-size:64px;margin-bottom:20px;}
+.empty-title{font-size:18px;font-weight:700;color:#1e293b;margin-bottom:8px;}
+.empty-sub{font-size:12px;color:var(--muted);font-family:monospace;margin-bottom:28px;line-height:1.6;}
+.upload-btn-wrap{position:relative;display:inline-block;}
+.upload-btn-wrap input{position:absolute;top:0;left:0;width:100%;height:100%;opacity:0;cursor:pointer;z-index:10;}
+
+/* CHARTS AREA */
+.charts-area{padding:14px 18px;}
 .device-card{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 14px;margin-bottom:12px;display:flex;flex-wrap:wrap;gap:18px;align-items:center;}
-.device-label{font-size:9px;color:var(--text-muted);letter-spacing:2px;font-family:monospace;margin-bottom:2px;}
-.device-value{font-size:13px;font-weight:600;color:#1e293b;font-family:monospace;}
-.device-date-input{font-size:12px;font-family:monospace;padding:4px 8px;border:1px solid var(--border);border-radius:5px;background:#fff;color:#1e293b;cursor:pointer;}
-
-/* Section header */
-.section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;gap:8px;flex-wrap:wrap;}
-.section-title{font-size:14px;font-weight:700;color:#1e293b;}
-.section-actions{display:flex;gap:6px;flex-wrap:wrap;}
+.dlabel{font-size:9px;color:var(--muted);letter-spacing:2px;font-family:monospace;margin-bottom:2px;}
+.dvalue{font-size:13px;font-weight:600;color:#1e293b;font-family:monospace;}
+.date-input{font-size:12px;font-family:monospace;padding:4px 8px;border:1px solid var(--border);border-radius:5px;background:#fff;color:#1e293b;cursor:pointer;}
+.sec-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;gap:8px;flex-wrap:wrap;}
+.sec-title{font-size:14px;font-weight:700;color:#1e293b;}
+.sec-actions{display:flex;gap:6px;flex-wrap:wrap;}
 
 /* CHART CARD */
-.chart-card{display:flex;align-items:stretch;background:#fff;border:1px solid var(--border);border-radius:10px;margin-bottom:10px;overflow:hidden;animation:fadeIn 0.3s ease;}
+.chart-card{display:flex;align-items:stretch;background:#fff;border:1px solid var(--border);border-radius:10px;margin-bottom:4px;overflow:hidden;animation:fadeIn .3s ease;}
 @keyframes fadeIn{from{opacity:0;transform:translateY(4px);}to{opacity:1;transform:none;}}
-.chart-left{flex-shrink:0;width:150px;padding:10px 12px;border-right:1px solid var(--border);background:#f1f5f9;display:flex;flex-direction:column;justify-content:space-between;gap:5px;}
-.chart-header-row{display:flex;align-items:center;gap:6px;}
+.chart-left{flex-shrink:0;width:150px;padding:10px 12px;border-right:1px solid var(--border);background:#f1f5f9;display:flex;flex-direction:column;justify-content:space-between;}
+.chart-title-row{display:flex;align-items:center;gap:6px;}
 .chart-stripe{width:3px;height:16px;border-radius:2px;flex-shrink:0;}
-.chart-title{font-size:11px;font-weight:700;font-family:monospace;color:#1e293b;}
-.chart-unit-label{font-size:10px;color:var(--text-dim);font-family:monospace;padding-left:9px;margin-top:1px;}
-.chart-stats{display:flex;flex-direction:column;gap:4px;padding-left:9px;}
+.chart-name{font-size:11px;font-weight:700;font-family:monospace;color:#1e293b;}
+.chart-unit{font-size:10px;color:var(--dim);font-family:monospace;padding-left:9px;margin-top:1px;}
+.chart-stats{display:flex;flex-direction:column;gap:3px;padding-left:9px;}
 .stat{display:flex;justify-content:space-between;align-items:baseline;gap:4px;}
 .stat-val{font-size:11px;font-weight:700;font-family:monospace;}
-.stat-label{font-size:9px;color:var(--text-muted);letter-spacing:1px;}
-.chart-card-actions{display:flex;gap:4px;padding-left:9px;margin-top:4px;}
-.chart-card-btn{font-size:10px;padding:3px 7px;border-radius:4px;cursor:pointer;border:1px solid;font-family:monospace;transition:all 0.15s;}
-.chart-card-btn-dl{background:rgba(37,99,235,0.08);color:var(--accent);border-color:rgba(37,99,235,0.25);}
-.chart-card-btn-dl:hover{background:rgba(37,99,235,0.18);}
-.chart-card-btn-rm{background:rgba(239,68,68,0.08);color:var(--danger);border-color:rgba(239,68,68,0.25);}
-.chart-card-btn-rm:hover{background:rgba(239,68,68,0.18);}
+.stat-lbl{font-size:9px;color:var(--muted);letter-spacing:1px;}
+.chart-btns{display:flex;gap:4px;padding-left:9px;margin-top:6px;}
+.cbtn{font-size:10px;padding:3px 7px;border-radius:4px;cursor:pointer;border:1px solid;font-family:monospace;transition:all .15s;}
+.cbtn-dl{background:rgba(37,99,235,.08);color:var(--accent);border-color:rgba(37,99,235,.25);}
+.cbtn-dl:hover{background:rgba(37,99,235,.18);}
+.cbtn-rm{background:rgba(239,68,68,.08);color:var(--danger);border-color:rgba(239,68,68,.25);}
+.cbtn-rm:hover{background:rgba(239,68,68,.18);}
 
-  .chart-right-wrapper{flex:1;min-width:0;display:flex;flex-direction:column;}
-.chart-right{flex:1;min-width:0;overflow-x:auto;overflow-y:hidden;padding:6px 8px 0;}
-.chart-right::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:4px;}
+/* Chart right: scroll area */
+.chart-right-col{flex:1;min-width:0;display:flex;flex-direction:column;}
+.chart-scroll{overflow-x:auto;overflow-y:hidden;padding:6px 8px 2px;}
+.chart-scroll::-webkit-scrollbar{height:4px;}
+.chart-scroll::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:4px;}
 .chart-wrap{position:relative;height:100px;}
-.chart-hours-label{text-align:center;font-size:10px;color:#94a3b8;padding:4px 0;font-family:monospace;letter-spacing:2px;background:#fff;border-top:1px solid #f1f5f9;}
-    color:#1e293b; font-size:13px; font-weight:700;
-    background:linear-gradient(135deg,#2563eb,#06b6d4);
-    -webkit-background-clip:text; -webkit-text-fill-color:transparent;
-    background-clip:text;
-    padding:2px 8px;
-    border:1px solid rgba(37,99,235,0.3);
-    border-radius:6px;
-    letter-spacing:0.5px;
-  }
 
-/* Empty state */
-.empty-state{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;min-height:400px;color:var(--text-muted);text-align:center;padding:40px;}
-.empty-icon{font-size:44px;margin-bottom:14px;opacity:0.3;}
+/* Hours label below each chart - separate from scroll */
+.hours-label{text-align:center;font-size:10px;color:var(--muted);font-family:monospace;letter-spacing:2px;padding:3px 0 6px;background:#fff;flex-shrink:0;}
 
-/* Download modal */
-.dl-modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:9000;display:flex;align-items:center;justify-content:center;padding:16px;}
-.dl-modal{background:#fff;border-radius:12px;padding:20px;max-width:340px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,0.15);}
-.dl-modal h3{font-size:15px;font-weight:700;margin-bottom:14px;color:#1e293b;}
-.dl-item{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border);}
+/* DOWNLOAD MODAL */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:9000;display:flex;align-items:center;justify-content:center;padding:16px;}
+.modal{background:#fff;border-radius:12px;padding:20px;max-width:360px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,.15);max-height:80vh;overflow-y:auto;}
+.modal h3{font-size:15px;font-weight:700;margin-bottom:14px;color:#1e293b;}
+.dl-item{display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid var(--border);}
 .dl-item:last-of-type{border-bottom:none;}
 .dl-item input[type=checkbox]{width:15px;height:15px;cursor:pointer;accent-color:var(--accent);}
 .dl-item label{flex:1;font-size:12px;font-family:monospace;cursor:pointer;color:#1e293b;}
-.dl-dot{width:8px;height:8px;border-radius:50%;}
-.dl-modal-actions{display:flex;gap:8px;margin-top:16px;}
+.dl-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+.modal-actions{display:flex;gap:8px;margin-top:16px;flex-wrap:wrap;}
+.eq-group-title{padding:8px 0 2px;font-size:11px;font-weight:700;color:#1e293b;font-family:monospace;border-top:1px solid #e2e8f0;margin-top:6px;}
+.eq-group-title:first-child{border-top:none;margin-top:0;}
 
-/* Footer */
-footer{background:var(--surface);border-top:1px solid var(--border);padding:6px 20px;font-size:10px;color:var(--text-muted);font-family:monospace;display:flex;justify-content:space-between;align-items:center;}
-.credit{color:var(--text-dim);font-size:10px;}
+/* FOOTER */
+footer{background:var(--surface);border-top:1px solid var(--border);padding:6px 20px;font-size:10px;color:var(--muted);font-family:monospace;display:flex;justify-content:space-between;align-items:center;}
+.credit{font-size:12px;font-weight:700;background:linear-gradient(135deg,#1d4ed8,#0891b2);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;border:1px solid rgba(37,99,235,.25);padding:2px 10px;border-radius:6px;}
 
 ::-webkit-scrollbar{width:4px;}
 ::-webkit-scrollbar-track{background:var(--surface);}
@@ -138,751 +130,564 @@ footer{background:var(--surface);border-top:1px solid var(--border);padding:6px 
 <body>
 
 <header>
-  <div class="header-brand">
-    <div class="header-icon">📡</div>
+  <div class="hbrand">
+    <div class="hicon">📡</div>
     <div>
-      <div class="header-label">◆ MONOWING MONITOR</div>
-      <div class="header-title">Data Dashboard</div>
+      <div class="hlabel">◆ MONOWING MONITOR</div>
+      <div class="htitle">Data Dashboard</div>
     </div>
   </div>
-  <div class="header-actions">
-    <div class="header-date" id="header-date"></div>
-    <button class="btn btn-danger" onclick="clearAllEquipment()">🗑 Clear All</button>
-    <button class="btn btn-outline" onclick="showDownloadModal()">⬇ Download</button>
+  <div class="hactions">
+    <div class="hdate" id="hdate"></div>
+    <button class="btn btn-danger" onclick="clearAll()">🗑 Clear All</button>
+    <button class="btn btn-outline" onclick="showDlModal()">⬇ Download</button>
   </div>
 </header>
 
 <div class="layout">
   <aside>
-    <div class="sidebar-label">EQUIPMENT LIST</div>
-    <div id="equipment-list"></div>
-    <div class="sidebar-bottom">
-      <div class="upload-area" id="drop-zone">
-        <div class="upload-icon">＋</div>
-        <div>Click / Drop CSV</div>
-        <div class="upload-sub">MwData CSV format</div>
-        <input type="file" id="file-input" accept=".csv" multiple
-          style="position:absolute;top:0;left:0;width:100%;height:100%;opacity:0;cursor:pointer;z-index:10;">
-      </div>
+    <div class="slabel">EQUIPMENT LIST</div>
+    <div id="eq-list"></div>
+    <div class="upload-area" style="position:relative;">
+      <div style="font-size:18px;margin-bottom:3px;">＋</div>
+      <div>Click / Drop CSV</div>
+      <div style="font-size:9px;margin-top:2px;">MwData CSV format</div>
+      <input type="file" id="file-input" accept=".csv" multiple
+        style="position:absolute;top:0;left:0;width:100%;height:100%;opacity:0;cursor:pointer;z-index:10;">
     </div>
   </aside>
 
   <main id="main">
+    <!-- EMPTY STATE -->
     <div class="empty-state" id="empty-state">
-      <div class="empty-icon">📊</div>
-      <div style="font-size:16px;font-weight:600;color:#1e293b;margin-bottom:6px;">No Equipment Data</div>
-      <div style="font-size:12px;color:#94a3b8;font-family:monospace;margin-bottom:20px;">Upload a MwData CSV file to start</div>
-      <div style="position:relative;display:inline-block;">
-        <button class="btn btn-primary" style="font-size:13px;padding:12px 28px;border-radius:8px;pointer-events:none;">＋ Upload CSV File</button>
-        <input type="file" accept=".csv" multiple
-          style="position:absolute;top:0;left:0;width:100%;height:100%;opacity:0;cursor:pointer;z-index:10;"
-          onchange="handleFiles(this.files)">
+      <div class="empty-icon">📡</div>
+      <div class="empty-title">Monowing Monitor</div>
+      <div class="empty-sub">
+        Upload MwData CSV files to visualize<br>sensor data from your equipment
+      </div>
+      <div class="upload-btn-wrap">
+        <button class="btn btn-primary" style="font-size:14px;padding:14px 32px;border-radius:10px;pointer-events:none;box-shadow:0 4px 12px rgba(37,99,235,.3);">
+          📂 Upload CSV File
+        </button>
+        <input type="file" accept=".csv" multiple onchange="handleFiles(this.files)">
       </div>
     </div>
 
-    <div id="charts-area" style="display:none">
-      <!-- Device info + date input -->
+    <!-- CHARTS AREA -->
+    <div class="charts-area" id="charts-area" style="display:none">
       <div class="device-card" id="device-info"></div>
-
-      <!-- Charts section header -->
-      <div class="section-header">
-        <div class="section-title" id="eq-title"></div>
-        <div class="section-actions">
+      <div class="sec-header">
+        <div class="sec-title" id="eq-title"></div>
+        <div class="sec-actions">
           <div style="position:relative;display:inline-block;">
             <button class="btn btn-outline">＋ Add CSV</button>
             <input type="file" accept=".csv" multiple
               style="position:absolute;top:0;left:0;width:100%;height:100%;opacity:0;cursor:pointer;z-index:10;"
               onchange="handleFiles(this.files)">
           </div>
-          <button class="btn btn-danger" onclick="clearCurrentEquipment()">🗑 Clear</button>
+          <button class="btn btn-danger" onclick="clearCurrent()">🗑 Clear</button>
         </div>
       </div>
-
       <div id="charts-container"></div>
     </div>
   </main>
 </div>
 
 <footer>
-  <span id="footer-count">0 equipment registered</span>
+  <span id="foot-count">0 equipment registered</span>
   <span class="credit">✦ Putra Siagian</span>
 </footer>
 
-<!-- Download Modal -->
-<div class="dl-modal-overlay" id="dl-modal" style="display:none" onclick="if(event.target===this)closeDlModal()">
-  <div class="dl-modal">
+<!-- DOWNLOAD MODAL -->
+<div class="modal-overlay" id="dl-modal" style="display:none" onclick="if(event.target===this)closeDlModal()">
+  <div class="modal">
     <h3>⬇ Select Charts to Download</h3>
     <div id="dl-checklist"></div>
-    <div class="dl-modal-actions">
-      <button class="btn btn-outline" onclick="toggleAllDl()" id="dl-toggle-btn">Deselect All</button>
-      <button class="btn btn-primary" onclick="executeDownload()" id="dl-exec-btn">Download Selected</button>
+    <div class="modal-actions">
+      <button class="btn btn-outline" onclick="toggleAllDl()" id="dl-toggle">Deselect All</button>
+      <button class="btn btn-primary" onclick="execDownload()">Download</button>
       <button class="btn btn-danger" onclick="closeDlModal()">Cancel</button>
     </div>
   </div>
 </div>
 
 <script>
-// ─── CONFIG ───────────────────────────────────────────────────────
+// ── CONFIG ────────────────────────────────────────────────
 const COLORS = ['#1d4ed8','#c2410c','#15803d','#b91c1c','#7e22ce','#0e7490'];
-
-const SHOW_METRICS = [
-  { prefix:'ActuatorPos', label:'ActuatorPos', unit:'mm',  unitFull:'Position (mm)',  color:COLORS[0] },
-  { prefix:'BoomAngle',   label:'BoomAngle',   unit:'Deg', unitFull:'Angle (°)',       color:COLORS[1] },
-  { prefix:'AccPress',    label:'AccPress',     unit:'Bar', unitFull:'Pressure (Bar)', color:COLORS[2] },
-  { prefix:'Battery',     label:'Battery',      unit:'V',   unitFull:'Voltage (V)',    color:COLORS[3] },
-  { prefix:'InputV',      label:'InputV',       unit:'V',   unitFull:'Voltage (V)',    color:COLORS[4] },
+const METRICS = [
+  { prefix:'ActuatorPos', label:'ActuatorPos', unit:'mm',  unitFull:'Position (mm)'  , color:COLORS[0] },
+  { prefix:'BoomAngle',   label:'BoomAngle',   unit:'Deg', unitFull:'Angle (°)'       , color:COLORS[1] },
+  { prefix:'AccPress',    label:'AccPress',     unit:'Bar', unitFull:'Pressure (Bar)'  , color:COLORS[2] },
+  { prefix:'Battery',     label:'Battery',      unit:'V',   unitFull:'Voltage (V)'     , color:COLORS[3] },
+  { prefix:'InputV',      label:'InputV',       unit:'V',   unitFull:'Voltage (V)'     , color:COLORS[4] },
 ];
+const MAX_PTS = 1000;
 
-const DEVICE_FIELDS = [{ key:'Monowing no', label:'MONOWING NO' }];
-const MAX_POINTS = 1000;
+// ── STATE ─────────────────────────────────────────────────
+let equipments = [], selIdx = -1, chartInsts = [], syncLock = false;
 
-// ─── STATE ────────────────────────────────────────────────────────
-let equipments   = [];
-let selectedIndex = -1;
-let chartInstances = [];   // { chart, metric, metricIndex }
-let syncScrolling = false;
-
-// ─── HELPERS ──────────────────────────────────────────────────────
-function sampleData(data, maxPts) {
-  if (data.length <= maxPts) return data;
-  const step = data.length / maxPts;
-  const result = [];
-  for (let i = 0; i < maxPts; i++) result.push(data[Math.round(i * step)]);
-  return result;
+// ── UTILS ─────────────────────────────────────────────────
+function sample(data, max) {
+  if (data.length <= max) return data;
+  const step = data.length / max, out = [];
+  for (let i = 0; i < max; i++) out.push(data[Math.round(i * step)]);
+  return out;
 }
 
-function parseMwCSV(text) {
-  const lines = text.split('\n').map(l => l.trim()).filter(l => l);
-  const deviceInfo = {};
-  let hdr = -1;
+function parseCSV(text) {
+  const lines = text.split('\n').map(l => l.trim()).filter(Boolean);
+  const info = {}; let hdr = -1;
   for (let i = 0; i < lines.length; i++) {
     if (/^Time\s*,/i.test(lines[i])) { hdr = i; break; }
     const m = lines[i].match(/^([A-Za-z][A-Za-z0-9 \/]+?)\s{2,}(.+)$/);
-    if (m) deviceInfo[m[1].trim()] = m[2].trim();
+    if (m) info[m[1].trim()] = m[2].trim();
   }
-  if (hdr === -1) return { deviceInfo, data:[] };
-  const headers = lines[hdr].split(',').map(h => h.trim()).filter(h => h);
+  if (hdr === -1) return { info, data: [] };
+  const headers = lines[hdr].split(',').map(h => h.trim()).filter(Boolean);
   const data = [];
   for (let i = hdr + 1; i < lines.length; i++) {
     if (!lines[i]) continue;
     const vals = lines[i].split(',').map(v => v.trim());
-    const row  = {};
-    headers.forEach((h, j) => { const n = parseFloat(vals[j]); row[h] = isNaN(n) ? (vals[j]||'') : n; });
+    const row = {};
+    headers.forEach((h, j) => { const n = parseFloat(vals[j]); row[h] = isNaN(n) ? vals[j] || '' : n; });
     if (Object.keys(row).some(k => k.trim().toLowerCase() === 'time')) data.push(row);
   }
-  return { deviceInfo, data };
+  return { info, data };
 }
 
-function getDeviceName(deviceInfo, fileName) {
-  const mwNo = deviceInfo['Monowing no'];
-  const pos  = deviceInfo['Monowing position'];
-  if (mwNo) return `Monowing ${mwNo}${pos ? ' — ' + pos : ''}`;
-  return fileName.replace(/\.csv$/i,'').replace(/[_-]/g,' ');
+function getName(info, file) {
+  const n = info['Monowing no'], p = info['Monowing position'];
+  return n ? `Monowing ${n}${p ? ' — ' + p : ''}` : file.replace(/\.csv$/i,'').replace(/[_-]/g,' ');
 }
 
-function findKey(row, prefix) {
-  return Object.keys(row).find(k => k.startsWith(prefix));
+function findKey(row, prefix) { return Object.keys(row).find(k => k.startsWith(prefix)); }
+function today() { return new Date().toISOString().slice(0,10); }
+
+// Extract HH:MM from timestamp string
+function toHM(s) {
+  const str = String(s||'');
+  const tp = str.includes(' ') ? str.split(' ')[1] : str;
+  return tp ? tp.slice(0,5) : '';
 }
 
-function formatDate(d) {
-  // Format date object as YYYY-MM-DD
-  return d.toISOString().slice(0,10);
+// Build display labels: ~10 evenly spaced HH:MM labels
+function buildLabels(rawLabels) {
+  const step = Math.max(1, Math.floor(rawLabels.length / 10));
+  return rawLabels.map((l, i) => (i % step === 0 || i === rawLabels.length - 1) ? toHM(l) : '');
 }
 
-function todayStr() { return formatDate(new Date()); }
-
-// ─── SIDEBAR ──────────────────────────────────────────────────────
+// ── SIDEBAR ───────────────────────────────────────────────
 function renderSidebar() {
-  const list = document.getElementById('equipment-list');
+  const list = document.getElementById('eq-list');
   list.innerHTML = '';
   equipments.forEach((eq, i) => {
-    const item = document.createElement('div');
-    item.className = 'eq-item' + (i === selectedIndex ? ' active' : '');
-    const tags = [];
-    if (eq.deviceInfo['Monowing no']) tags.push('MW #' + eq.deviceInfo['Monowing no']);
-    item.innerHTML = `
+    const el = document.createElement('div');
+    el.className = 'eq-item' + (i === selIdx ? ' active' : '');
+    const tags = eq.info['Monowing no'] ? [`<span class="eq-tag">MW #${eq.info['Monowing no']}</span>`] : [];
+    el.innerHTML = `
       <div class="eq-top">
         <div class="eq-dot" style="background:${COLORS[i%COLORS.length]}"></div>
         <div class="eq-name">${eq.name}</div>
-        <div class="eq-actions">
-          <button class="eq-btn eq-btn-del" title="Delete" onclick="deleteEq(event,${i})">✕</button>
-        </div>
+        <button class="eq-del" onclick="delEq(event,${i})">✕</button>
       </div>
       ${eq.userDate ? `<div class="eq-date">📅 ${eq.userDate}</div>` : ''}
-      <div class="eq-tags">${tags.map(t=>`<span class="eq-tag">${t}</span>`).join('')}</div>
-    `;
-    item.addEventListener('click', () => selectEq(i));
-    list.appendChild(item);
+      <div class="eq-tags">${tags.join('')}</div>`;
+    el.addEventListener('click', () => selectEq(i));
+    list.appendChild(el);
   });
-  document.getElementById('footer-count').textContent = `${equipments.length} equipment registered`;
+  document.getElementById('foot-count').textContent = `${equipments.length} equipment registered`;
 }
 
-function selectEq(i) { selectedIndex = i; renderSidebar(); renderCharts(); }
-
-function deleteEq(e, i) {
+function selectEq(i) { selIdx = i; renderSidebar(); renderCharts(); }
+function delEq(e, i) {
   e.stopPropagation();
   equipments.splice(i, 1);
-  if (selectedIndex >= equipments.length) selectedIndex = equipments.length - 1;
+  if (selIdx >= equipments.length) selIdx = equipments.length - 1;
   renderSidebar(); renderCharts();
 }
-
-function clearAllEquipment() {
+function clearAll() {
   if (!equipments.length) return;
-  if (!confirm('Clear all equipment data?')) return;
-  chartInstances.forEach(ci => ci.chart.destroy());
-  chartInstances = [];
-  equipments = [];
-  selectedIndex = -1;
+  if (!confirm('Clear all equipment?')) return;
+  chartInsts.forEach(c => c.chart.destroy());
+  chartInsts = []; equipments = []; selIdx = -1;
   renderSidebar(); renderCharts();
 }
-
-function clearCurrentEquipment() {
-  if (selectedIndex < 0) return;
-  if (!confirm(`Clear "${equipments[selectedIndex].name}"?`)) return;
-  deleteEq({ stopPropagation:()=>{} }, selectedIndex);
+function clearCurrent() {
+  if (selIdx < 0) return;
+  if (!confirm(`Clear "${equipments[selIdx].name}"?`)) return;
+  delEq({ stopPropagation:()=>{} }, selIdx);
 }
 
-// ─── RENDER CHARTS ────────────────────────────────────────────────
+// ── RENDER CHARTS ─────────────────────────────────────────
 function renderCharts() {
-  chartInstances.forEach(ci => ci.chart.destroy());
-  chartInstances = [];
-
+  chartInsts.forEach(c => c.chart.destroy()); chartInsts = [];
   const empty = document.getElementById('empty-state');
   const area  = document.getElementById('charts-area');
-  const container = document.getElementById('charts-container');
-  const deviceInfoEl = document.getElementById('device-info');
-
-  if (selectedIndex < 0 || !equipments[selectedIndex]) {
+  const cont  = document.getElementById('charts-container');
+  if (selIdx < 0 || !equipments[selIdx]) {
     empty.style.display = 'flex'; area.style.display = 'none'; return;
   }
   empty.style.display = 'none'; area.style.display = 'block';
 
-  const eq = equipments[selectedIndex];
+  const eq = equipments[selIdx];
   document.getElementById('eq-title').textContent = eq.name;
 
-  // Device info card with date input
-  const shownFields = DEVICE_FIELDS.filter(f => eq.deviceInfo[f.key]);
-  deviceInfoEl.innerHTML = shownFields.map(f => `
-    <div class="device-field">
-      <div class="device-label">${f.label}</div>
-      <div class="device-value">${eq.deviceInfo[f.key]}</div>
-    </div>
-  `).join('') + `
-    <div class="device-field">
-      <div class="device-label">DATA TOTAL</div>
-      <div class="device-value">${eq.data.length.toLocaleString()} pts</div>
-    </div>
-    <div class="device-field">
-      <div class="device-label">SAMPLE RATE</div>
-      <div class="device-value">1 per ${eq.data.length > MAX_POINTS ? Math.round(eq.data.length/MAX_POINTS) : 1} pts</div>
-    </div>
-    <div class="device-field">
-      <div class="device-label">📅 DATA DATE</div>
-      <input type="date" class="device-date-input" id="date-input-${selectedIndex}"
-        value="${eq.userDate || todayStr()}"
-        onchange="setEquipmentDate(${selectedIndex}, this.value)">
-    </div>
-  `;
+  // Device info
+  const di = document.getElementById('device-info');
+  di.innerHTML = `
+    ${eq.info['Monowing no'] ? `<div><div class="dlabel">MONOWING NO</div><div class="dvalue">${eq.info['Monowing no']}</div></div>` : ''}
+    <div><div class="dlabel">DATA TOTAL</div><div class="dvalue">${eq.data.length.toLocaleString()} pts</div></div>
+    <div><div class="dlabel">SAMPLE RATE</div><div class="dvalue">1 per ${eq.data.length > MAX_PTS ? Math.round(eq.data.length/MAX_PTS) : 1} pts</div></div>
+    <div>
+      <div class="dlabel">📅 DATA DATE</div>
+      <input type="date" class="date-input" value="${eq.userDate||today()}"
+        onchange="setDate(${selIdx},this.value)">
+    </div>`;
 
-  // Sample
-  const sampled  = sampleData(eq.data, MAX_POINTS);
-  const timeKey  = Object.keys(sampled[0]||{}).find(k=>k.trim().toLowerCase()==='time')||'Time';
+  const sampled = sample(eq.data, MAX_PTS);
+  const timeKey = Object.keys(sampled[0]||{}).find(k=>k.trim().toLowerCase()==='time')||'Time';
   const rawLabels = sampled.map(d => (d[timeKey]||'').toString().trim());
+  const displayLabels = buildLabels(rawLabels);
   const firstRow = sampled[0] || {};
 
-  // Chart width: 3x available
   const mainEl = document.getElementById('main');
   const chartW = Math.round((mainEl.clientWidth - 40) * 3);
 
-  // Display labels: extract HH:MM, show ~8 evenly spaced, add "hours" below
-  const labelStep = Math.max(1, Math.floor(rawLabels.length / 8));
-  const displayLabels = rawLabels.map((l, i) => {
-    if (i % labelStep !== 0 && i !== rawLabels.length - 1) return '';
-    const s = String(l);
-    const tp = s.includes(' ') ? s.split(' ')[1] : s;
-    return tp ? tp.slice(0, 5) : ''; // HH:MM only
-  });
+  cont.innerHTML = '';
 
-  container.innerHTML = '';
+  METRICS.forEach((metric, mi) => {
+    const dk = findKey(firstRow, metric.prefix);
+    if (!dk) return;
+    const vals = sampled.map(d => typeof d[dk]==='number' ? d[dk] : null);
+    const nums = vals.filter(v => v!==null);
+    if (!nums.length) return;
 
-  SHOW_METRICS.forEach((metric, mi) => {
-    const dataKey = findKey(firstRow, metric.prefix);
-    if (!dataKey) return;
-    const vals    = sampled.map(d => typeof d[dataKey]==='number' ? d[dataKey] : null);
-    const numVals = vals.filter(v => v!==null);
-    if (!numVals.length) return;
-
-    const minV  = Math.min(...numVals);
-    const maxV  = Math.max(...numVals);
-    const lastV = numVals[numVals.length-1];
+    const minV = Math.min(...nums), maxV = Math.max(...nums), lastV = nums[nums.length-1];
+    const pad  = (maxV-minV)*0.12||0.05;
     const color = metric.color;
-    const pad   = (maxV-minV)*0.12||0.05;
 
+    // Card
     const card = document.createElement('div');
-    card.className = 'chart-card';
-    card.id = `card-metric-${mi}`;
+    card.className = 'chart-card'; card.id = `card-${mi}`;
     card.innerHTML = `
       <div class="chart-left">
         <div>
-          <div class="chart-header-row">
+          <div class="chart-title-row">
             <div class="chart-stripe" style="background:${color}"></div>
-            <div class="chart-title">${metric.label}</div>
+            <div class="chart-name">${metric.label}</div>
           </div>
-          <div class="chart-unit-label">${metric.unitFull}</div>
+          <div class="chart-unit">${metric.unitFull}</div>
         </div>
         <div class="chart-stats">
-          <div class="stat"><span class="stat-label">LAST</span><span class="stat-val" style="color:${color}">${lastV.toFixed(2)}</span></div>
-          <div class="stat"><span class="stat-label">MIN</span><span class="stat-val">${minV.toFixed(2)}</span></div>
-          <div class="stat"><span class="stat-label">MAX</span><span class="stat-val">${maxV.toFixed(2)}</span></div>
+          <div class="stat"><span class="stat-lbl">LAST</span><span class="stat-val" style="color:${color}">${lastV.toFixed(2)}</span></div>
+          <div class="stat"><span class="stat-lbl">MIN</span><span class="stat-val">${minV.toFixed(2)}</span></div>
+          <div class="stat"><span class="stat-lbl">MAX</span><span class="stat-val">${maxV.toFixed(2)}</span></div>
         </div>
-        <div class="chart-card-actions">
-          <button class="chart-card-btn chart-card-btn-dl" onclick="downloadSingleChart(${mi})">⬇</button>
-          <button class="chart-card-btn chart-card-btn-rm" onclick="removeChart(${mi})">✕</button>
+        <div class="chart-btns">
+          <button class="cbtn cbtn-dl" onclick="dlSingle(${mi})">⬇</button>
+          <button class="cbtn cbtn-rm" onclick="rmChart(${mi})">✕</button>
         </div>
       </div>
-      <div class="chart-right-wrapper" id="cr-wrapper-${mi}">
-        <div class="chart-right" id="cr-${mi}">
+      <div class="chart-right-col">
+        <div class="chart-scroll" id="cs-${mi}">
           <div class="chart-wrap" style="width:${chartW}px">
             <canvas id="chart-${mi}"></canvas>
           </div>
         </div>
-      </div>
-    `;
-    container.appendChild(card);
+        <div class="hours-label">— hours —</div>
+      </div>`;
+    cont.appendChild(card);
 
-    // "hours" label outside the card, below it
-    const hoursDiv = document.createElement('div');
-    hoursDiv.style.cssText = 'text-align:center;font-size:10px;color:#94a3b8;font-family:monospace;letter-spacing:2px;margin:-6px 0 8px 150px;';
-    hoursDiv.textContent = '— hours —';
-    container.appendChild(hoursDiv);
-
+    // Sync scroll
     setTimeout(() => {
-      const crEl = document.getElementById(`cr-${mi}`);
-      if (crEl) crEl.addEventListener('scroll', () => syncScroll(crEl));
+      const el = document.getElementById(`cs-${mi}`);
+      if (el) el.addEventListener('scroll', () => {
+        if (syncLock) return; syncLock = true;
+        document.querySelectorAll('.chart-scroll').forEach(e => { if(e!==el) e.scrollLeft=el.scrollLeft; });
+        syncLock = false;
+      });
     }, 0);
 
     const ctx = document.getElementById(`chart-${mi}`).getContext('2d');
     const chart = new Chart(ctx, {
-      type:'line',
-      plugins:[{
-        id:'whiteBg',
-        beforeDraw:(c)=>{ c.ctx.save(); c.ctx.fillStyle='#fff'; c.ctx.fillRect(0,0,c.width,c.height); c.ctx.restore(); }
-      }],
-      data:{
+      type: 'line',
+      plugins: [{ id:'wb', beforeDraw:(c)=>{ c.ctx.save(); c.ctx.fillStyle='#fff'; c.ctx.fillRect(0,0,c.width,c.height); c.ctx.restore(); } }],
+      data: {
         labels: displayLabels,
-        datasets:[{
-          data: vals,
-          rawLabels: rawLabels,
-          borderColor: color, borderWidth:2,
-          pointRadius:0, pointHoverRadius:4,
-          tension:0.3, fill:false,
-        }]
+        datasets: [{ data:vals, rawLabels, borderColor:color, borderWidth:2, pointRadius:0, pointHoverRadius:4, tension:0.3, fill:false }]
       },
-      options:{
+      options: {
         responsive:true, maintainAspectRatio:false, animation:{duration:300},
-        plugins:{
+        plugins: {
           legend:{display:false},
           tooltip:{
             backgroundColor:'#fff', borderColor:color, borderWidth:1,
             titleColor:'#64748b', bodyColor:'#1e293b',
             callbacks:{
-              title:(items)=>{
-                const raw = rawLabels[items[0].dataIndex]||'';
-                const date = eq.userDate || '';
-                return date ? `${date} ${raw}` : raw;
-              },
-              label:(item)=>` ${metric.label}: ${item.raw??'N/A'} ${metric.unit}`
+              title:(items) => rawLabels[items[0].dataIndex]||'',
+              label:(item) => ` ${metric.label}: ${item.raw??'N/A'} ${metric.unit}`
             }
           }
         },
-        scales:{
+        scales: {
           x:{
             grid:{color:'#e2e8f0'}, border:{display:false},
-            ticks:{
-              color:'#64748b', font:{size:10}, maxRotation:0,
-              maxTicksLimit:10,
-              callback:(val,i)=>{ return displayLabels[i] || ''; }
+            ticks:{ color:'#64748b', font:{size:10}, maxRotation:0, maxTicksLimit:12,
+              callback:(val,i) => displayLabels[i]||''
             }
           },
           y:{
             min:minV-pad, max:maxV+pad,
             grid:{color:'#e2e8f0'}, border:{display:false},
             title:{ display:true, text:metric.unitFull, color:'#64748b', font:{size:10} },
-            ticks:{color:'#64748b', font:{size:10}, maxTicksLimit:4}
+            ticks:{ color:'#64748b', font:{size:10}, maxTicksLimit:4 }
           }
         }
       }
     });
-    chartInstances.push({ chart, metric, metricIndex:mi, vals, minV, maxV, rawLabels, displayLabels });
+    chartInsts.push({ chart, metric, mi, vals, minV, maxV, rawLabels, displayLabels });
   });
 
-  setTimeout(()=>{
-    document.querySelectorAll('.chart-right').forEach(el=>{ el.scrollLeft=el.scrollWidth; });
-  }, 500);
+  setTimeout(() => { document.querySelectorAll('.chart-scroll').forEach(e => e.scrollLeft=e.scrollWidth); }, 500);
 }
 
-function syncScroll(src) {
-  if (syncScrolling) return; syncScrolling = true;
-  document.querySelectorAll('.chart-right').forEach(el=>{ if(el!==src) el.scrollLeft=src.scrollLeft; });
-  syncScrolling = false;
+function setDate(idx, val) { if(equipments[idx]){ equipments[idx].userDate=val; renderSidebar(); renderCharts(); } }
+function rmChart(mi) {
+  const ci = chartInsts.find(c=>c.mi===mi); if(ci) ci.chart.destroy();
+  chartInsts = chartInsts.filter(c=>c.mi!==mi);
+  const card = document.getElementById(`card-${mi}`); if(card) card.remove();
 }
 
-// ─── DATE PER EQUIPMENT ──────────────────────────────────────────
-function setEquipmentDate(idx, val) {
-  if (equipments[idx]) {
-    equipments[idx].userDate = val;
-    renderSidebar();
-    renderCharts();
-  }
-}
-
-// ─── REMOVE SINGLE CHART ─────────────────────────────────────────
-function removeChart(mi) {
-  const ci = chartInstances.find(c => c.metricIndex === mi);
-  if (ci) ci.chart.destroy();
-  chartInstances = chartInstances.filter(c => c.metricIndex !== mi);
-  const card = document.getElementById(`card-metric-${mi}`);
-  if (card) card.remove();
-}
-
-// ─── FILE HANDLING ────────────────────────────────────────────────
+// ── FILE HANDLING ─────────────────────────────────────────
 async function handleFiles(files) {
-  for (const file of files) {
-    if (!file.name.toLowerCase().endsWith('.csv')) continue;
+  for (const f of files) {
+    if (!f.name.toLowerCase().endsWith('.csv')) continue;
     try {
-      const eq = await loadCSV(file);
-      equipments.push(eq);
-      selectedIndex = equipments.length - 1;
-    } catch { alert('Failed to read: ' + file.name); }
+      const eq = await readCSV(f); equipments.push(eq); selIdx = equipments.length-1;
+    } catch { alert('Failed: '+f.name); }
   }
   renderSidebar(); renderCharts();
 }
+document.getElementById('file-input').addEventListener('change', async e => { await handleFiles(e.target.files); e.target.value=''; });
 
-document.getElementById('file-input').addEventListener('change', async (e) => {
-  await handleFiles(e.target.files); e.target.value='';
-});
+// Drag drop on sidebar
+const dz = document.getElementById('file-input').parentElement;
+document.querySelector('aside').addEventListener('dragover', e=>{ e.preventDefault(); });
+document.querySelector('aside').addEventListener('drop', async e=>{ e.preventDefault(); await handleFiles(e.dataTransfer.files); });
 
-const dropZone = document.getElementById('drop-zone');
-dropZone.addEventListener('dragover', e=>{ e.preventDefault(); dropZone.style.borderColor='#2563eb'; });
-dropZone.addEventListener('dragleave', ()=>{ dropZone.style.borderColor=''; });
-dropZone.addEventListener('drop', async e=>{
-  e.preventDefault(); dropZone.style.borderColor='';
-  await handleFiles(e.dataTransfer.files);
-});
-
-async function loadCSV(file) {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = e => {
+function readCSV(file) {
+  return new Promise((res, rej) => {
+    const r = new FileReader();
+    r.onload = e => {
       try {
-        const { deviceInfo, data } = parseMwCSV(e.target.result);
-        resolve({
-          id: Date.now()+Math.random(),
-          name: getDeviceName(deviceInfo, file.name),
-          deviceInfo, data,
-          fileName: file.name,
-          userDate: todayStr(),
-        });
-      } catch(err) { reject(err); }
+        const { info, data } = parseCSV(e.target.result);
+        res({ id:Date.now()+Math.random(), name:getName(info,file.name), info, data, fileName:file.name, userDate:today() });
+      } catch(err) { rej(err); }
     };
-    reader.onerror = reject;
-    reader.readAsText(file);
+    r.onerror = rej; r.readAsText(file);
   });
 }
 
-// ─── DOWNLOAD MODAL ───────────────────────────────────────────────
-function showDownloadModal() {
-  if (!equipments.length) { alert('No data to download.'); return; }
-  const checklist = document.getElementById('dl-checklist');
-
-  // Build checklist grouped by equipment
-  let html = '';
-  equipments.forEach((eq, ei) => {
-    html += `
-      <div style="padding:8px 0 4px;font-size:11px;font-weight:700;color:#1e293b;font-family:monospace;
-        border-top:${ei>0?'1px solid #e2e8f0':'none'};margin-top:${ei>0?'8px':'0'}">
-        <input type="checkbox" id="dl-eq-${ei}" onchange="toggleEqChk(${ei})" checked style="margin-right:6px;accent-color:#2563eb;">
-        <span style="color:${COLORS[ei%COLORS.length]}">●</span> ${eq.name}
-        ${eq.userDate ? `<span style="color:#94a3b8;font-weight:400"> · ${eq.userDate}</span>` : ''}
-      </div>
-    `;
-    SHOW_METRICS.forEach((metric, mi) => {
-      html += `
-        <div class="dl-item" style="padding-left:16px;">
-          <input type="checkbox" id="dl-chk-${ei}-${mi}" data-eq="${ei}" checked>
-          <div class="dl-dot" style="background:${metric.color}"></div>
-          <label for="dl-chk-${ei}-${mi}">${metric.label} [${metric.unit}]</label>
-        </div>
-      `;
-    });
-  });
-  checklist.innerHTML = html;
-  document.getElementById('dl-modal').style.display = 'flex';
+// ── DOWNLOAD MODAL ────────────────────────────────────────
+let dlAll = true;
+function showDlModal() {
+  if (!equipments.length) { alert('No data.'); return; }
+  const cl = document.getElementById('dl-checklist');
+  cl.innerHTML = equipments.map((eq,ei) => `
+    <div class="eq-group-title">
+      <input type="checkbox" id="deq-${ei}" onchange="toggleEqGroup(${ei})" checked style="margin-right:6px;accent-color:#2563eb;">
+      <span style="color:${COLORS[ei%COLORS.length]}">●</span> ${eq.name}
+      ${eq.userDate?`<span style="color:#94a3b8;font-weight:400"> · ${eq.userDate}</span>`:''}
+    </div>
+    ${METRICS.map((m,mi)=>`
+      <div class="dl-item" style="padding-left:20px;">
+        <input type="checkbox" id="dc-${ei}-${mi}" data-ei="${ei}" checked>
+        <div class="dl-dot" style="background:${m.color}"></div>
+        <label for="dc-${ei}-${mi}">${m.label} [${m.unit}]</label>
+      </div>`).join('')}
+  `).join('');
+  document.getElementById('dl-modal').style.display='flex';
 }
-
-function toggleEqChk(ei) {
-  const master = document.getElementById(`dl-eq-${ei}`);
-  SHOW_METRICS.forEach((_, mi) => {
-    const cb = document.getElementById(`dl-chk-${ei}-${mi}`);
-    if (cb) cb.checked = master.checked;
-  });
-}
-
 function closeDlModal() { document.getElementById('dl-modal').style.display='none'; }
-
-let dlAllSelected = true;
+function toggleEqGroup(ei) {
+  const master = document.getElementById(`deq-${ei}`);
+  METRICS.forEach((_,mi)=>{ const cb=document.getElementById(`dc-${ei}-${mi}`); if(cb) cb.checked=master.checked; });
+}
 function toggleAllDl() {
-  dlAllSelected = !dlAllSelected;
-  document.querySelectorAll('[id^=dl-chk-],[id^=dl-eq-]').forEach(cb => cb.checked = dlAllSelected);
-  document.getElementById('dl-toggle-btn').textContent = dlAllSelected ? 'Deselect All' : 'Select All';
+  dlAll=!dlAll;
+  document.querySelectorAll('[id^=dc-],[id^=deq-]').forEach(cb=>cb.checked=dlAll);
+  document.getElementById('dl-toggle').textContent=dlAll?'Deselect All':'Select All';
 }
-
-async function executeDownload() {
-  // Collect selected: per equipment, per metric
-  const tasks = []; // { eq, metricIndex }
-  equipments.forEach((eq, ei) => {
-    SHOW_METRICS.forEach((metric, mi) => {
-      const cb = document.getElementById(`dl-chk-${ei}-${mi}`);
-      if (cb && cb.checked) tasks.push({ eq, ei, metric, mi });
+async function execDownload() {
+  const tasks={};
+  equipments.forEach((eq,ei)=>{
+    METRICS.forEach((m,mi)=>{
+      const cb=document.getElementById(`dc-${ei}-${mi}`);
+      if(cb&&cb.checked){
+        if(!tasks[ei]) tasks[ei]=[];
+        const s=sample(eq.data,MAX_PTS);
+        const tk=Object.keys(s[0]||{}).find(k=>k.trim().toLowerCase()==='time')||'Time';
+        const raw=s.map(d=>(d[tk]||'').toString().trim());
+        const dk=findKey(s[0]||{},m.prefix);
+        const vals=dk?s.map(d=>typeof d[dk]==='number'?d[dk]:null):[];
+        const nums=vals.filter(v=>v!==null);
+        tasks[ei].push({eq,m,vals,minV:nums.length?Math.min(...nums):0,maxV:nums.length?Math.max(...nums):1,raw});
+      }
     });
   });
-
-  if (!tasks.length) { alert('Select at least one chart.'); return; }
+  if(!Object.keys(tasks).length){alert('Select at least one.');return;}
   closeDlModal();
-
-  // Group tasks by equipment, download one PNG per equipment
-  const byEq = {};
-  tasks.forEach(t => {
-    if (!byEq[t.ei]) byEq[t.ei] = [];
-    byEq[t.ei].push(t);
-  });
-
-  for (const ei of Object.keys(byEq)) {
-    const eqTasks = byEq[ei];
-    const eq = eqTasks[0].eq;
-    // Build fake CIs for doDownloadDirect
-    const cis = eqTasks.map(t => {
-      // Sample data for this eq
-      const sampled = sampleData(eq.data, MAX_POINTS);
-      const timeKey = Object.keys(sampled[0]||{}).find(k=>k.trim().toLowerCase()==='time')||'Time';
-      const rawLabels = sampled.map(d=>(d[timeKey]||'').toString().trim());
-      const firstRow = sampled[0]||{};
-      const dataKey = findKey(firstRow, t.metric.prefix);
-      const vals = dataKey ? sampled.map(d=>typeof d[dataKey]==='number'?d[dataKey]:null) : [];
-      const numVals = vals.filter(v=>v!==null);
-      const minV = numVals.length ? Math.min(...numVals) : 0;
-      const maxV = numVals.length ? Math.max(...numVals) : 1;
-      return { metric:t.metric, vals, minV, maxV, rawLabels, eq };
-    });
-    await doDownloadDirect(eq, cis);
-  }
+  for(const ei of Object.keys(tasks)) await doDownload(equipments[ei], tasks[ei]);
+}
+async function dlSingle(mi) {
+  const ci=chartInsts.find(c=>c.mi===mi); if(!ci) return;
+  const eq=equipments[selIdx];
+  await doDownload(eq,[{eq,m:ci.metric,vals:ci.vals,minV:ci.minV,maxV:ci.maxV,raw:ci.rawLabels}]);
 }
 
-async function downloadSingleChart(mi) {
-  const ci = chartInstances.find(c => c.metricIndex === mi);
-  if (!ci) return;
-  const eq = equipments[selectedIndex];
-  await doDownloadDirect(eq, [ci]);
-}
-
-// ─── DOWNLOAD ENGINE ─────────────────────────────────────────────
-async function doDownloadDirect(eq, selectedCIs) {
-
-  const btn = document.getElementById('btn-download-hidden') || document.createElement('button');
-
+// ── DOWNLOAD ENGINE ───────────────────────────────────────
+async function doDownload(eq, tasks) {
   try {
-    const SCALE=2, PAD=32, LEFT_W=210, ROW_H=210, GAP=12;
-    const TITLE_H=60, INFO_H=74, FULL_W=1400;
+    const SC=2,PAD=32,LW=210,CH=160,HOURS_H=24,ROW_H=CH+HOURS_H+40,GAP=12,TH=60,IH=74,FW=1400;
+    const totalH=(TH+IH+PAD+tasks.length*(ROW_H+GAP)+PAD)*SC;
+    const totalW=(LW+FW+PAD*2)*SC;
+    const out=document.createElement('canvas'); out.width=totalW; out.height=totalH;
+    const ctx=out.getContext('2d'); ctx.scale(SC,SC);
+    const W=totalW/SC;
 
-    const totalH = (TITLE_H + INFO_H + PAD + selectedCIs.length*(ROW_H+GAP) + PAD) * SCALE;
-    const totalW = (LEFT_W + FULL_W + PAD*2) * SCALE;
+    // Background
+    ctx.fillStyle='#fff'; ctx.fillRect(0,0,W,totalH/SC);
 
-    const out = document.createElement('canvas');
-    out.width=totalW; out.height=totalH;
-    const ctx = out.getContext('2d');
-    ctx.scale(SCALE, SCALE);
-    const W=totalW/SCALE, H=totalH/SCALE;
-
-    ctx.fillStyle='#ffffff'; ctx.fillRect(0,0,W,H);
-
-    // Header
-    ctx.fillStyle='#1e293b'; ctx.font='bold 18px sans-serif';
-    ctx.fillText(eq.name||'', PAD, PAD+22);
+    // Title
+    ctx.fillStyle='#1e293b'; ctx.font='bold 18px sans-serif'; ctx.fillText(eq.name||'',PAD,PAD+22);
     ctx.fillStyle='#64748b'; ctx.font='12px monospace';
-    const dateStr = eq.userDate
-      ? new Date(eq.userDate+'T12:00:00').toLocaleDateString('en-US',{weekday:'short',year:'numeric',month:'long',day:'numeric'})
-      : new Date().toLocaleDateString('en-US',{weekday:'short',year:'numeric',month:'long',day:'numeric'});
-    ctx.fillText(dateStr, PAD, PAD+42);
+    const ds=eq.userDate?new Date(eq.userDate+'T12:00:00').toLocaleDateString('en-US',{weekday:'short',year:'numeric',month:'long',day:'numeric'}):new Date().toLocaleDateString('en-US',{weekday:'short',year:'numeric',month:'long',day:'numeric'});
+    ctx.fillText(ds,PAD,PAD+42);
 
     // Info bar
-    const infoY=TITLE_H+4;
+    const iy=TH+4;
     ctx.fillStyle='#f1f5f9'; ctx.strokeStyle='#cbd5e1'; ctx.lineWidth=1;
-    roundRect(ctx,PAD,infoY,W-PAD*2,INFO_H-8,6); ctx.fill(); ctx.stroke();
-    const fields=[
-      ['MONOWING NO', eq.deviceInfo['Monowing no']||'-'],
-      ['DATA TOTAL',  eq.data.length.toLocaleString()+' pts'],
-      ['SAMPLE RATE', `1 per ${eq.data.length>MAX_POINTS?Math.round(eq.data.length/MAX_POINTS):1} pts`],
-      ['DATA DATE',   eq.userDate||'—'],
-    ];
-    fields.forEach(([lbl,val],i)=>{
+    rr(ctx,PAD,iy,W-PAD*2,IH-8,6); ctx.fill(); ctx.stroke();
+    [['MONOWING NO',eq.info['Monowing no']||'-'],['DATA TOTAL',eq.data.length.toLocaleString()+' pts'],
+     ['SAMPLE RATE','1 per '+(eq.data.length>MAX_PTS?Math.round(eq.data.length/MAX_PTS):1)+' pts'],['DATA DATE',eq.userDate||'—']
+    ].forEach(([l,v],i)=>{
       const fx=PAD+16+i*200;
-      ctx.fillStyle='#94a3b8'; ctx.font='10px monospace'; ctx.fillText(lbl,fx,infoY+18);
-      ctx.fillStyle='#0f172a'; ctx.font='bold 13px monospace'; ctx.fillText(val,fx,infoY+38);
+      ctx.fillStyle='#94a3b8'; ctx.font='10px monospace'; ctx.fillText(l,fx,iy+18);
+      ctx.fillStyle='#0f172a'; ctx.font='bold 13px monospace'; ctx.fillText(v,fx,iy+38);
     });
 
-    // Build all tmpCharts
-    const tmpCanvases=[], tmpCharts=[];
-    for (const ci of selectedCIs) {
-      const { metric, vals, minV, maxV, rawLabels } = ci;
+    // Build & render all tmpCharts first
+    const tcs=[],tCharts=[];
+    for(const {eq:_,m,vals,minV,maxV,raw} of tasks){
       const pad2=(maxV-minV)*0.12||0.05;
-      const dlStep=Math.max(1,Math.floor(rawLabels.length/10));
-      const allLabels=rawLabels.map((l,i)=>{
-        if(i%dlStep!==0 && i!==rawLabels.length-1) return '';
-        const s=String(l);
-        const tp=s.includes(' ')?s.split(' ')[1]:s;
-        return tp?tp.slice(0,5):''; // HH:MM only
-      });
-
+      const dlLbls=buildLabels(raw);
       const tc=document.createElement('canvas');
-      tc.width=FULL_W-16; tc.height=ROW_H-50;
+      tc.width=FW-16; tc.height=CH;
       tc.style.cssText='position:fixed;left:-9999px;top:0;visibility:hidden;';
       document.body.appendChild(tc);
-
       const tChart=new Chart(tc,{
         type:'line',
         plugins:[{id:'wb',beforeDraw:(c)=>{c.ctx.save();c.ctx.fillStyle='#fff';c.ctx.fillRect(0,0,c.width,c.height);c.ctx.restore();}}],
-        data:{
-          labels:allLabels,
-          datasets:[{data:vals,borderColor:metric.color,borderWidth:2.5,pointRadius:0,tension:0.3,fill:false}]
-        },
+        data:{labels:dlLbls,datasets:[{data:vals,borderColor:m.color,borderWidth:2.5,pointRadius:0,tension:0.3,fill:false}]},
         options:{
           responsive:false,maintainAspectRatio:false,animation:false,
           plugins:{legend:{display:false},tooltip:{enabled:false}},
           scales:{
-            x:{
-              grid:{color:'#e2e8f0'},border:{display:false},
-              ticks:{color:'#334155',font:{size:10},maxRotation:0,maxTicksLimit:20,
-                callback:(val,i)=>{return allLabels[i]||'';}}
-            },
-            y:{
-              min:minV-pad2,max:maxV+pad2,
-              grid:{color:'#e2e8f0'},border:{display:false},
-              title:{display:true,text:metric.unitFull,color:'#334155',font:{size:10}},
-              ticks:{color:'#334155',font:{size:10},maxTicksLimit:4}
-            }
+            x:{grid:{color:'#e2e8f0'},border:{display:false},
+              ticks:{color:'#334155',font:{size:11},maxRotation:0,maxTicksLimit:12,
+                callback:(val,i)=>dlLbls[i]||''}},
+            y:{min:minV-pad2,max:maxV+pad2,grid:{color:'#e2e8f0'},border:{display:false},
+              title:{display:true,text:m.unitFull,color:'#334155',font:{size:10}},
+              ticks:{color:'#334155',font:{size:11},maxTicksLimit:4}}
           }
         }
       });
-      tmpCanvases.push(tc); tmpCharts.push(tChart);
+      tcs.push(tc); tCharts.push(tChart);
     }
 
+    // Wait for render
     await new Promise(r=>setTimeout(r,800));
     await new Promise(r=>requestAnimationFrame(r));
     await new Promise(r=>requestAnimationFrame(r));
 
-    let y=TITLE_H+INFO_H+PAD;
-    for(let i=0;i<selectedCIs.length;i++){
-      const {metric,minV,maxV,vals} = selectedCIs[i];
+    // Draw each row
+    let y=TH+IH+PAD;
+    for(let i=0;i<tasks.length;i++){
+      const {m,vals,minV,maxV}=tasks[i];
       const lastV=vals.filter(v=>v!==null).slice(-1)[0];
-      const tc=tmpCanvases[i], tChart=tmpCharts[i];
-      const cardW=W-PAD*2;
+      const cW=W-PAD*2;
 
       ctx.fillStyle='#fff'; ctx.strokeStyle='#e2e8f0'; ctx.lineWidth=1;
-      roundRect(ctx,PAD,y,cardW,ROW_H,8); ctx.fill(); ctx.stroke();
-      ctx.fillStyle='#f8fafc'; ctx.strokeStyle='#e2e8f0';
-      roundRectLeft(ctx,PAD,y,LEFT_W,ROW_H,8); ctx.fill(); ctx.stroke();
+      rr(ctx,PAD,y,cW,ROW_H,8); ctx.fill(); ctx.stroke();
+      rrl(ctx,PAD,y,LW,ROW_H,8); ctx.fillStyle='#f8fafc'; ctx.fill(); ctx.stroke();
 
-      ctx.fillStyle=metric.color; ctx.fillRect(PAD+12,y+14,4,22);
-      ctx.fillStyle='#0f172a'; ctx.font='bold 13px monospace'; ctx.fillText(metric.label,PAD+22,y+30);
-      ctx.fillStyle='#64748b'; ctx.font='11px monospace'; ctx.fillText(metric.unitFull,PAD+22,y+46);
+      ctx.fillStyle=m.color; ctx.fillRect(PAD+12,y+14,4,22);
+      ctx.fillStyle='#0f172a'; ctx.font='bold 13px monospace'; ctx.fillText(m.label,PAD+22,y+30);
+      ctx.fillStyle='#64748b'; ctx.font='11px monospace'; ctx.fillText(m.unitFull,PAD+22,y+46);
 
-      [['LAST',lastV,metric.color],['MIN',minV,'#334155'],['MAX',maxV,'#334155']].forEach(([lbl,val,clr],si)=>{
-        const sy=y+68+si*32;
-        ctx.fillStyle='#94a3b8'; ctx.font='10px monospace'; ctx.fillText(lbl,PAD+14,sy);
-        ctx.fillStyle=clr; ctx.font='bold 14px monospace'; ctx.fillText(val?.toFixed(2)??'-',PAD+LEFT_W-85,sy);
+      [['LAST',lastV,m.color],['MIN',minV,'#334155'],['MAX',maxV,'#334155']].forEach(([l,v,c],si)=>{
+        const sy=y+66+si*30;
+        ctx.fillStyle='#94a3b8'; ctx.font='10px monospace'; ctx.fillText(l,PAD+14,sy);
+        ctx.fillStyle=c; ctx.font='bold 14px monospace'; ctx.fillText(v?.toFixed(2)??'-',PAD+LW-80,sy);
       });
 
       ctx.strokeStyle='#e2e8f0'; ctx.lineWidth=1;
-      ctx.beginPath(); ctx.moveTo(PAD+LEFT_W,y); ctx.lineTo(PAD+LEFT_W,y+ROW_H); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(PAD+LW,y); ctx.lineTo(PAD+LW,y+ROW_H); ctx.stroke();
 
-      // Draw chart onto output canvas (leave 20px at bottom for "hours" label)
-      const chartDrawH = ROW_H - 70; // chart height excluding hours space
-      ctx.drawImage(tc, PAD+LEFT_W+8, y+8, FULL_W-16, chartDrawH);
+      // Draw chart (CH height, leaving HOURS_H space below)
+      ctx.drawImage(tcs[i],PAD+LW+8,y+8,FW-16,CH);
 
-      // Draw "hours" text below chart area, centered, never overlapping ticks
-      ctx.fillStyle = '#94a3b8';
-      ctx.font = '11px monospace';
-      ctx.textAlign = 'center';
-      ctx.fillText('— hours —', PAD + LEFT_W + (FULL_W/2), y + 8 + chartDrawH + 14);
-      ctx.textAlign = 'left';
+      // Draw "— hours —" below chart, in the HOURS_H space
+      ctx.fillStyle='#94a3b8'; ctx.font='11px monospace'; ctx.textAlign='center';
+      ctx.fillText('— hours —', PAD+LW+(FW/2), y+8+CH+16);
+      ctx.textAlign='left';
 
-      tChart.destroy(); document.body.removeChild(tc);
-
+      tCharts[i].destroy(); document.body.removeChild(tcs[i]);
       y+=ROW_H+GAP;
     }
 
-    function roundRect(ctx,x,y,w,h,r){ctx.beginPath();ctx.moveTo(x+r,y);ctx.lineTo(x+w-r,y);ctx.arcTo(x+w,y,x+w,y+r,r);ctx.lineTo(x+w,y+h-r);ctx.arcTo(x+w,y+h,x+w-r,y+h,r);ctx.lineTo(x+r,y+h);ctx.arcTo(x,y+h,x,y+h-r,r);ctx.lineTo(x,y+r);ctx.arcTo(x,y,x+r,y,r);ctx.closePath();}
-    function roundRectLeft(ctx,x,y,w,h,r){ctx.beginPath();ctx.moveTo(x+r,y);ctx.lineTo(x+w,y);ctx.lineTo(x+w,y+h);ctx.lineTo(x+r,y+h);ctx.arcTo(x,y+h,x,y+h-r,r);ctx.lineTo(x,y+r);ctx.arcTo(x,y,x+r,y,r);ctx.closePath();}
+    function rr(ctx,x,y,w,h,r){ctx.beginPath();ctx.moveTo(x+r,y);ctx.lineTo(x+w-r,y);ctx.arcTo(x+w,y,x+w,y+r,r);ctx.lineTo(x+w,y+h-r);ctx.arcTo(x+w,y+h,x+w-r,y+h,r);ctx.lineTo(x+r,y+h);ctx.arcTo(x,y+h,x,y+h-r,r);ctx.lineTo(x,y+r);ctx.arcTo(x,y,x+r,y,r);ctx.closePath();}
+    function rrl(ctx,x,y,w,h,r){ctx.beginPath();ctx.moveTo(x+r,y);ctx.lineTo(x+w,y);ctx.lineTo(x+w,y+h);ctx.lineTo(x+r,y+h);ctx.arcTo(x,y+h,x,y+h-r,r);ctx.lineTo(x,y+r);ctx.arcTo(x,y,x+r,y,r);ctx.closePath();}
 
     const dataUrl=out.toDataURL('image/png');
-    // Filename uses data date, not download date
-    const dateTag = (eq.userDate||todayStr()).replace(/-/g,'');
-    const safeName=(eq.name||'monowing').replace(/[^a-z0-9]/gi,'_').toLowerCase();
-    const metricTag = selectedCIs.length===1 ? `_${selectedCIs[0].metric.label}` : '';
-    const fileName=`${safeName}${metricTag}_${dateTag}.png`;
+    const tag=(eq.userDate||today()).replace(/-/g,'');
+    const nm=(eq.name||'monowing').replace(/[^a-z0-9]/gi,'_').toLowerCase();
+    const mtag=tasks.length===1?`_${tasks[0].m.label}`:'';
+    const fn=`${nm}${mtag}_${tag}.png`;
 
     const isIOS=/iPad|iPhone|iPod/.test(navigator.userAgent)&&!window.MSStream;
     const isSafari=/^((?!chrome|android).)*safari/i.test(navigator.userAgent);
-
     if(isIOS||isSafari){
-      const newTab=window.open();
-      if(newTab){
-        newTab.document.write(`<!DOCTYPE html><html><head><meta name="viewport" content="width=device-width,initial-scale=1"><title>${fileName}</title>
-        <style>body{margin:0;background:#000;display:flex;flex-direction:column;align-items:center;padding:12px}p{color:#fff;font-family:sans-serif;font-size:13px;text-align:center;background:rgba(255,255,255,0.1);border-radius:8px;padding:10px 16px;margin-bottom:10px}img{max-width:100%}</style></head>
-        <body><p>📥 Press &amp; hold image → <b>Save to Photos</b></p><img src="${dataUrl}"></body></html>`);
-        newTab.document.close();
-      } else { showImageModal(dataUrl,fileName); }
+      const t=window.open();
+      if(t){t.document.write(`<!DOCTYPE html><html><head><meta name="viewport" content="width=device-width,initial-scale=1"><title>${fn}</title><style>body{margin:0;background:#000;display:flex;flex-direction:column;align-items:center;padding:12px}p{color:#fff;font-family:sans-serif;font-size:13px;text-align:center;background:rgba(255,255,255,.1);border-radius:8px;padding:10px 16px;margin-bottom:10px}img{max-width:100%}</style></head><body><p>📥 Press &amp; hold → <b>Save to Photos</b></p><img src="${dataUrl}"></body></html>`);t.document.close();}
+      else imgModal(dataUrl,fn);
     } else {
-      const link=document.createElement('a');
-      link.download=fileName; link.href=dataUrl;
-      document.body.appendChild(link); link.click(); document.body.removeChild(link);
+      const a=document.createElement('a'); a.download=fn; a.href=dataUrl;
+      document.body.appendChild(a); a.click(); document.body.removeChild(a);
     }
-
   } catch(err){ alert('Download failed: '+err.message); }
 }
 
-function showImageModal(dataUrl, fileName) {
-  const overlay=document.createElement('div');
-  overlay.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,0.92);z-index:9999;overflow-y:auto;display:flex;flex-direction:column;align-items:center;padding:16px;';
-  overlay.innerHTML=`<div style="color:#fff;font-family:sans-serif;font-size:13px;text-align:center;background:rgba(59,130,246,0.2);border:1px solid #3b82f6;border-radius:8px;padding:10px 16px;margin-bottom:12px;max-width:340px;">
-    📥 Press &amp; hold image → <b>Save to Photos</b><br><br>
-    <button onclick="this.closest('div').parentElement.remove()" style="background:#3b82f6;color:#fff;border:none;padding:6px 18px;border-radius:6px;font-size:12px;cursor:pointer;">✕ Close</button>
-  </div><img src="${dataUrl}" style="max-width:100%;border-radius:8px;">`;
-  document.body.appendChild(overlay);
+function imgModal(url,fn){
+  const o=document.createElement('div');
+  o.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.9);z-index:9999;overflow-y:auto;display:flex;flex-direction:column;align-items:center;padding:16px;';
+  o.innerHTML=`<div style="color:#fff;font-family:sans-serif;font-size:13px;text-align:center;background:rgba(59,130,246,.2);border:1px solid #3b82f6;border-radius:8px;padding:10px 16px;margin-bottom:12px;">📥 Press &amp; hold → <b>Save to Photos</b><br><br><button onclick="this.closest('div').parentElement.remove()" style="background:#3b82f6;color:#fff;border:none;padding:6px 18px;border-radius:6px;font-size:12px;cursor:pointer;">✕ Close</button></div><img src="${url}" style="max-width:100%;border-radius:8px;">`;
+  document.body.appendChild(o);
 }
 
-// ─── INIT ─────────────────────────────────────────────────────────
-document.getElementById('header-date').textContent =
+// ── INIT ──────────────────────────────────────────────────
+document.getElementById('hdate').textContent =
   new Date().toLocaleDateString('en-US',{weekday:'short',year:'numeric',month:'short',day:'numeric'});
 
-// Credit toast on load
-window.addEventListener('load', () => {
-  const toast = document.createElement('div');
-  toast.style.cssText = [
-    'position:fixed','bottom:52px','right:16px','z-index:9999',
-    'background:linear-gradient(135deg,#1d4ed8,#0891b2)',
-    'color:#fff','font-family:monospace','font-size:12px','font-weight:600',
-    'padding:8px 16px','border-radius:8px',
-    'box-shadow:0 4px 16px rgba(29,78,216,0.35)',
-    'letter-spacing:0.5px','opacity:1','transition:opacity 0.6s ease',
-  ].join(';');
-  toast.innerHTML = '✦ Created by <b>Putra Siagian</b>';
-  document.body.appendChild(toast);
-  setTimeout(() => { toast.style.opacity='0'; }, 3500);
-  setTimeout(() => { toast.remove(); }, 4200);
+window.addEventListener('load', ()=>{
+  const t=document.createElement('div');
+  t.style.cssText='position:fixed;bottom:52px;right:16px;z-index:9999;background:linear-gradient(135deg,#1d4ed8,#0891b2);color:#fff;font-family:monospace;font-size:12px;font-weight:600;padding:8px 16px;border-radius:8px;box-shadow:0 4px 16px rgba(29,78,216,.35);letter-spacing:.5px;opacity:1;transition:opacity .6s ease;';
+  t.innerHTML='✦ Created by <b>Putra Siagian</b>';
+  document.body.appendChild(t);
+  setTimeout(()=>t.style.opacity='0',3500);
+  setTimeout(()=>t.remove(),4200);
 });
 
-renderSidebar(); renderCharts();
 renderSidebar(); renderCharts();
 </script>
 </body>
