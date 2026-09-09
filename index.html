@@ -500,6 +500,7 @@ function renderCharts() {
             grid:{color:'#e2e8f0'}, border:{display:false},
             ticks:{
               color:'#64748b', font:{size:10}, maxRotation:0,
+              maxTicksLimit:10,
               callback:(val,i)=>{ return displayLabels[i] || ''; }
             }
           },
@@ -749,12 +750,7 @@ async function doDownloadDirect(eq, selectedCIs) {
 
       const tChart=new Chart(tc,{
         type:'line',
-        plugins:[{id:'wb',beforeDraw:(c)=>{c.ctx.save();c.ctx.fillStyle='#fff';c.ctx.fillRect(0,0,c.width,c.height);c.ctx.restore();}},
-          {id:'hoursLbl',afterDraw:(c)=>{
-            const cx=c.ctx,a=c.chartArea;
-            cx.save();cx.fillStyle='#94a3b8';cx.font='11px sans-serif';cx.textAlign='center';
-            cx.fillText('hours',a.left+(a.right-a.left)/2,c.height-4);cx.restore();
-          }}],
+        plugins:[{id:'wb',beforeDraw:(c)=>{c.ctx.save();c.ctx.fillStyle='#fff';c.ctx.fillRect(0,0,c.width,c.height);c.ctx.restore();}}],
         data:{
           labels:allLabels,
           datasets:[{data:vals,borderColor:metric.color,borderWidth:2.5,pointRadius:0,tension:0.3,fill:false}]
@@ -809,7 +805,17 @@ async function doDownloadDirect(eq, selectedCIs) {
       ctx.strokeStyle='#e2e8f0'; ctx.lineWidth=1;
       ctx.beginPath(); ctx.moveTo(PAD+LEFT_W,y); ctx.lineTo(PAD+LEFT_W,y+ROW_H); ctx.stroke();
 
-      ctx.drawImage(tc,PAD+LEFT_W+8,y+8,FULL_W-16,ROW_H-50);
+      // Draw chart onto output canvas (leave 20px at bottom for "hours" label)
+      const chartDrawH = ROW_H - 70; // chart height excluding hours space
+      ctx.drawImage(tc, PAD+LEFT_W+8, y+8, FULL_W-16, chartDrawH);
+
+      // Draw "hours" text below chart area, centered, never overlapping ticks
+      ctx.fillStyle = '#94a3b8';
+      ctx.font = '11px monospace';
+      ctx.textAlign = 'center';
+      ctx.fillText('— hours —', PAD + LEFT_W + (FULL_W/2), y + 8 + chartDrawH + 14);
+      ctx.textAlign = 'left';
+
       tChart.destroy(); document.body.removeChild(tc);
 
       y+=ROW_H+GAP;
@@ -859,24 +865,24 @@ function showImageModal(dataUrl, fileName) {
 document.getElementById('header-date').textContent =
   new Date().toLocaleDateString('en-US',{weekday:'short',year:'numeric',month:'short',day:'numeric'});
 
-// Show credit toast on load
+// Credit toast on load
 window.addEventListener('load', () => {
   const toast = document.createElement('div');
-  toast.style.cssText = `
-    position:fixed; bottom:60px; right:20px; z-index:9999;
-    background:linear-gradient(135deg,#2563eb,#06b6d4);
-    color:#fff; font-family:monospace; font-size:13px; font-weight:700;
-    padding:10px 18px; border-radius:10px;
-    box-shadow:0 4px 20px rgba(37,99,235,0.4);
-    letter-spacing:0.5px; opacity:1;
-    transition:opacity 0.5s ease;
-  `;
-  toast.textContent = '✦ Created by Putra Siagian';
+  toast.style.cssText = [
+    'position:fixed','bottom:52px','right:16px','z-index:9999',
+    'background:linear-gradient(135deg,#1d4ed8,#0891b2)',
+    'color:#fff','font-family:monospace','font-size:12px','font-weight:600',
+    'padding:8px 16px','border-radius:8px',
+    'box-shadow:0 4px 16px rgba(29,78,216,0.35)',
+    'letter-spacing:0.5px','opacity:1','transition:opacity 0.6s ease',
+  ].join(';');
+  toast.innerHTML = '✦ Created by <b>Putra Siagian</b>';
   document.body.appendChild(toast);
-  setTimeout(() => { toast.style.opacity = '0'; }, 3000);
-  setTimeout(() => { toast.remove(); }, 3600);
+  setTimeout(() => { toast.style.opacity='0'; }, 3500);
+  setTimeout(() => { toast.remove(); }, 4200);
 });
 
+renderSidebar(); renderCharts();
 renderSidebar(); renderCharts();
 </script>
 </body>
