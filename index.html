@@ -267,13 +267,12 @@ function today() { return new Date().toISOString().slice(0,10); }
 function toHM(s) {
   const str = String(s||'');
   const tp = str.includes(' ') ? str.split(' ')[1] : str;
-  return tp ? tp.slice(0,5) : '';
+  return tp ? tp.slice(0,5) : str.slice(0,5);
 }
 
-// Build display labels: ~10 evenly spaced HH:MM labels
+// Build display labels: HH:MM on every point, Chart.js autoSkip handles spacing
 function buildLabels(rawLabels) {
-  const step = Math.max(1, Math.floor(rawLabels.length / 10));
-  return rawLabels.map((l, i) => (i % step === 0 || i === rawLabels.length - 1) ? toHM(l) : '');
+  return rawLabels.map(l => toHM(l));
 }
 
 // ── SIDEBAR ───────────────────────────────────────────────
@@ -431,9 +430,11 @@ function renderCharts() {
         },
         scales: {
           x:{
+            type:'category',
             grid:{color:'#e2e8f0'}, border:{display:false},
-            ticks:{ color:'#64748b', font:{size:10}, maxRotation:0, maxTicksLimit:12,
-              callback:(val,i) => displayLabels[i]||''
+            ticks:{
+              color:'#64748b', font:{size:10}, maxRotation:0,
+              autoSkip:true, maxTicksLimit:10,
             }
           },
           y:{
@@ -594,8 +595,7 @@ async function doDownload(eq, tasks) {
           plugins:{legend:{display:false},tooltip:{enabled:false}},
           scales:{
             x:{grid:{color:'#e2e8f0'},border:{display:false},
-              ticks:{color:'#334155',font:{size:11},maxRotation:0,maxTicksLimit:12,
-                callback:(val,i)=>dlLbls[i]||''}},
+              ticks:{color:'#334155',font:{size:11},maxRotation:0,autoSkip:true,maxTicksLimit:12}},
             y:{min:minV-pad2,max:maxV+pad2,grid:{color:'#e2e8f0'},border:{display:false},
               title:{display:true,text:m.unitFull,color:'#334155',font:{size:10}},
               ticks:{color:'#334155',font:{size:11},maxTicksLimit:4}}
